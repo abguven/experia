@@ -10,6 +10,21 @@ st.set_page_config(page_title="Carnet d'Expériences", page_icon="🔥", layout=
 # Modifie cette ligne avec ton URL Atlas
 MONGO_URI = st.secrets.get("MONGO_URI", os.getenv("MONGO_URI"))
 
+# Vérification mot de passe
+if 'authenticated' not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+    password = st.text_input("Mot de passe", type="password")
+    if st.button("Se connecter"):
+        if password == st.secrets.get("APP_PASSWORD", ""):
+            st.session_state.authenticated = True
+            st.rerun()
+        else:
+            st.error("Mot de passe incorrect")
+    st.stop()
+
+
 # Connexion MongoDB Atlas
 @st.cache_resource
 def init_connection():
