@@ -17,14 +17,21 @@ Ces galères méritent d'être sauvegardées pour ne **jamais** perdre de temps 
 
 - ✅ **Recherche full-text** : Cherche dans les titres, problèmes, solutions, tags et code
 - ✅ **Code snippets** : Stocke tes configurations, commandes et scripts
+- ✅ **Screenshots** : Upload d'images (PNG/JPG) encodées en base64
+- ✅ **Édition/Suppression** : Modifie ou supprime tes expériences directement dans l'app
+- ✅ **Validation Pydantic** : Messages d'erreur clairs si données invalides
+- ✅ **Schema MongoDB** : Garantit la cohérence des données en base
 - ✅ **Tags contextuels** : Docker, MongoDB, VSCode, networking...
 - ✅ **Criticité** : Marque les problèmes bloquants vs juste chiants
 - ✅ **Temps perdu** : Track combien de temps chaque galère t'a coûté
+- ✅ **Authentification** : Password-manager friendly
 
 ## 🛠️ Stack technique
 
 - **Frontend** : Streamlit
 - **Database** : MongoDB Atlas (cluster gratuit M0)
+- **Validation** : Pydantic + MongoDB Schema Validator
+- **Storage** : Images encodées en base64
 - **Déploiement** : Streamlit Community Cloud
 
 ## 📦 Installation locale
@@ -39,7 +46,10 @@ pip install -r requirements.txt
 
 # Configure MongoDB (crée .streamlit/secrets.toml)
 mkdir .streamlit
-echo 'MONGO_URI = "mongodb+srv://user:pass@cluster.mongodb.net/"' > .streamlit/secrets.toml
+cat > .streamlit/secrets.toml << EOF
+MONGO_URI = "mongodb+srv://user:pass@cluster.mongodb.net/"
+APP_PASSWORD = "ton_mot_de_passe"
+EOF
 
 # Lance l'app
 streamlit run app.py
