@@ -1,108 +1,106 @@
 # 🔥 Experia
 
-**Le carnet d'expériences délirantes pour Data Engineers**
+**Knowledge base dédiée aux Data Engineers**
 
-Experia est une application Streamlit qui permet de documenter et retrouver rapidement toutes ces galères techniques qui bouffent du temps et qu'on oublie 3 mois après.
+Experia est une application Streamlit conçue pour centraliser, documenter et retrouver efficacement les problématiques techniques rencontrées lors du développement ou de l’intégration de solutions data. L’objectif : réduire le temps perdu sur des incidents déjà résolus mais souvent oubliés.
 
-## 💡 Pourquoi Experia ?
+## 💡 Objectif
 
-Parce que certains problèmes sont **introuvables** sur Stack Overflow :
-- Comment se connecter depuis Airbyte vers Postgres local ? (`host.docker.internal`)
-- Quel raccourci pour exécuter du SQL dans VSCode avec l'extension Microsoft ?
-- Comment accéder à un replica set MongoDB en local sans casser la topologie ?
+Certains problèmes sont trop spécifiques pour être bien référencés dans la documentation officielle ou sur Stack Overflow. Experia fournit un espace structuré pour conserver ces cas techniques, leurs analyses et leurs résolutions.
 
-Ces galères méritent d'être sauvegardées pour ne **jamais** perdre de temps à nouveau.
+Exemples de questions récurrentes :
+
+* Connexion Airbyte → Postgres local via `host.docker.internal`
+* Exécution de requêtes SQL dans VSCode (extension Microsoft)
+* Connexion à un replica set MongoDB local sans modifier la topologie
 
 ## 🚀 Fonctionnalités
 
-- ✅ **Recherche full-text** : Cherche dans les titres, problèmes, solutions, tags et code
-- ✅ **Code snippets** : Stocke tes configurations, commandes et scripts
-- ✅ **Screenshots** : Upload d'images (PNG/JPG) encodées en base64
-- ✅ **Édition/Suppression** : Modifie ou supprime tes expériences directement dans l'app
-- ✅ **Validation Pydantic** : Messages d'erreur clairs si données invalides
-- ✅ **Schema MongoDB** : Garantit la cohérence des données en base
-- ✅ **Tags contextuels** : Docker, MongoDB, VSCode, networking...
-- ✅ **Criticité** : Marque les problèmes bloquants vs juste chiants
-- ✅ **Temps perdu** : Track combien de temps chaque galère t'a coûté
-- ✅ **Authentification** : Password-manager friendly
+* **Recherche full-text** sur les titres, descriptions, solutions, tags et extraits de code
+* **Stockage de snippets** (commandes, configurations, scripts)
+* **Gestion d’images** (screenshots encodés en base64)
+* **Édition et suppression** des expériences directement dans l’interface
+* **Validation Pydantic** pour garantir l’intégrité des données
+* **Schema Validator MongoDB** pour formaliser la structure en base
+* **Système de tags** (Docker, MongoDB, VSCode, Networking, etc.)
+* **Criticité** (bloquant / non bloquant)
+* **Indicateur de temps perdu** par incident
+* **Authentification simple**, compatible avec les gestionnaires de mots de passe
 
 ## 🛠️ Stack technique
 
-- **Frontend** : Streamlit
-- **Database** : MongoDB Atlas (cluster gratuit M0)
-- **Validation** : Pydantic + MongoDB Schema Validator
-- **Storage** : Images encodées en base64
-- **Déploiement** : Streamlit Community Cloud
+* **Framework** : Streamlit
+* **Base de données** : MongoDB Atlas (cluster gratuit M0)
+* **Validation** : Pydantic + MongoDB Schema Validator
+* **Stockage médias** : encodage Base64
+* **Déploiement** : Streamlit Community Cloud
 
 ## 📦 Installation locale
 
 ```bash
-# Clone le repo
 git clone https://github.com/ton-username/experia.git
 cd experia
 
-# Installe les dépendances
 pip install -r requirements.txt
 
-# Configure MongoDB (crée .streamlit/secrets.toml)
 mkdir .streamlit
 cat > .streamlit/secrets.toml << EOF
 MONGO_URI = "mongodb+srv://user:pass@cluster.mongodb.net/"
-APP_PASSWORD = "ton_mot_de_passe"
+APP_PASSWORD = "mot_de_passe"
 EOF
 
-# Lance l'app
 streamlit run app.py
 ```
 
 ## 🌐 Déploiement sur Streamlit Cloud
 
-1. Push ton code sur GitHub
-2. Va sur [share.streamlit.io](https://share.streamlit.io)
-3. Connecte ton repo
-4. Dans **Settings → Secrets**, ajoute :
-   ```toml
-   MONGO_URI = "mongodb+srv://user:password@cluster.mongodb.net/"
-   ```
+1. Publier le code sur GitHub
+2. Se rendre sur [https://share.streamlit.io](https://share.streamlit.io)
+3. Connecter le dépôt
+4. Renseigner les secrets nécessaires :
 
-## 📝 Structure des expériences
-
-Chaque expérience contient :
-- **Titre** : Description courte du problème
-- **Problème** : Contexte détaillé de la galère
-- **Solution** : Ce qui a finalement marché
-- **Code snippet** : Commandes, config, scripts
-- **Tags** : Pour retrouver facilement (docker, postgres, vscode...)
-- **Criticité** : bloquant ou chiant
-- **Temps perdu** : Combien de temps ça t'a coûté
-- **Date** : Quand tu as résolu ça
-
-## 🎯 Cas d'usage
-
-**Exemple 1 : Connexion Docker → Postgres**
+```toml
+MONGO_URI = "mongodb+srv://user:password@cluster.mongodb.net/"
+APP_PASSWORD = "mot_de_passe"
 ```
-Problème : Airbyte en Docker ne trouve pas Postgres sur localhost
-Solution : Utiliser host.docker.internal:5432 au lieu de localhost:5432
+
+## 📝 Structure d’une expérience
+
+Une expérience comporte les éléments suivants :
+
+* **Titre** : résumé du sujet
+* **Problème** : description détaillée et contexte
+* **Solution** : approche validée
+* **Code snippet** : configuration, commandes, scripts
+* **Tags** : classification par technologie ou contexte
+* **Criticité** : niveau d’impact
+* **Temps perdu** : estimation du temps passé
+* **Date** : résolution de l’incident
+
+## 🎯 Exemples
+
+**Connexion Docker → Postgres**
+
+```
+Problème : Airbyte en Docker ne détecte pas Postgres sur localhost.
+Solution : Utilisation de host.docker.internal:5432.
 Tags : docker, postgres, airbyte, networking
 Temps perdu : 2h
 ```
 
-**Exemple 2 : Raccourcis VSCode**
+**Raccourcis SQL sous VSCode**
+
 ```
-Problème : F5 ne marche pas avec l'extension Microsoft SQL
-Solution : Modifier keybindings.json avec la commande mssql.runQuery
+Problème : La touche F5 n’exécute pas les requêtes SQL.
+Solution : Ajout de la commande mssql.runQuery dans keybindings.json.
 Tags : vscode, sql, shortcuts
-Temps perdu : 30min
+Temps perdu : 30 minutes
 ```
 
 ## 🤝 Contribution
 
-C'est un projet personnel mais si tu veux l'utiliser ou l'améliorer, go !
+Le projet est open source. Les suggestions et améliorations sont les bienvenues.
 
 ## 📄 Licence
 
-MIT - Fais-en ce que tu veux
-
----
-
-**Fait avec rage après trop de temps perdu sur des problèmes cons** 😤
+Licence MIT.
