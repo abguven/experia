@@ -1,106 +1,188 @@
-# 🔥 Experia
+# Experia
 
-**Knowledge base dédiée aux Data Engineers**
+**A knowledge management system for data engineering workflows**
 
-Experia est une application Streamlit conçue pour centraliser, documenter et retrouver efficacement les problématiques techniques rencontrées lors du développement ou de l’intégration de solutions data. L’objectif : réduire le temps perdu sur des incidents déjà résolus mais souvent oubliés.
+Experia is a Streamlit-based application designed to document and retrieve technical solutions to common data engineering challenges. The application addresses the problem of rediscovering solutions to previously encountered technical issues that are often poorly documented or difficult to find through conventional search.
 
-## 💡 Objectif
+## Motivation
 
-Certains problèmes sont trop spécifiques pour être bien référencés dans la documentation officielle ou sur Stack Overflow. Experia fournit un espace structuré pour conserver ces cas techniques, leurs analyses et leurs résolutions.
+Data engineers frequently encounter technical challenges that are:
+- Poorly documented in official sources
+- Difficult to locate on Stack Overflow or similar platforms
+- Environment-specific and require contextual knowledge
+- Time-consuming to solve repeatedly
 
-Exemples de questions récurrentes :
+Examples include:
+- Docker networking configurations (e.g., `host.docker.internal` for container-to-host connections)
+- IDE-specific configurations and keyboard shortcuts
+- Database replica set access patterns from local development environments
 
-* Connexion Airbyte → Postgres local via `host.docker.internal`
-* Exécution de requêtes SQL dans VSCode (extension Microsoft)
-* Connexion à un replica set MongoDB local sans modifier la topologie
+Experia provides a structured approach to capturing these solutions for future reference.
 
-## 🚀 Fonctionnalités
+## Features
 
-* **Recherche full-text** sur les titres, descriptions, solutions, tags et extraits de code
-* **Stockage de snippets** (commandes, configurations, scripts)
-* **Gestion d’images** (screenshots encodés en base64)
-* **Édition et suppression** des expériences directement dans l’interface
-* **Validation Pydantic** pour garantir l’intégrité des données
-* **Schema Validator MongoDB** pour formaliser la structure en base
-* **Système de tags** (Docker, MongoDB, VSCode, Networking, etc.)
-* **Criticité** (bloquant / non bloquant)
-* **Indicateur de temps perdu** par incident
-* **Authentification simple**, compatible avec les gestionnaires de mots de passe
+- **Full-text search**: Search across titles, problems, solutions, tags, and code snippets
+- **Code snippet storage**: Preserve configurations, commands, and scripts with syntax highlighting
+- **Screenshot support**: Attach images (PNG/JPG) encoded in base64, up to 5MB per file
+- **CRUD operations**: Create, read, update, and delete experiences through the interface
+- **Data validation**: Pydantic models for application-level validation and MongoDB schema validation for data integrity
+- **Categorization**: Classify experiences as problems, tips, or notes
+- **Tagging system**: Organize experiences with custom tags (e.g., docker, postgres, vscode)
+- **Authentication**: Password-protected access with password manager compatibility
 
-## 🛠️ Stack technique
+## Technology Stack
 
-* **Framework** : Streamlit
-* **Base de données** : MongoDB Atlas (cluster gratuit M0)
-* **Validation** : Pydantic + MongoDB Schema Validator
-* **Stockage médias** : encodage Base64
-* **Déploiement** : Streamlit Community Cloud
+- **Frontend**: Streamlit
+- **Database**: MongoDB Atlas (M0 free tier)
+- **Validation**: Pydantic 2.x + MongoDB Schema Validator
+- **Image Storage**: Base64-encoded binary data
+- **Deployment**: Streamlit Community Cloud
 
-## 📦 Installation locale
+## Local Installation
+
+### Prerequisites
+- Python 3.9+
+- MongoDB Atlas account
+- Poetry (optional) or pip
+
+### Setup
 
 ```bash
-git clone https://github.com/ton-username/experia.git
+# Clone repository
+git clone https://github.com/yourusername/experia.git
 cd experia
 
+# Install dependencies
 pip install -r requirements.txt
 
-mkdir .streamlit
+# Configure secrets
+mkdir -p .streamlit
 cat > .streamlit/secrets.toml << EOF
-MONGO_URI = "mongodb+srv://user:pass@cluster.mongodb.net/"
-APP_PASSWORD = "mot_de_passe"
+MONGO_URI = "mongodb+srv://user:password@cluster.mongodb.net/"
+APP_PASSWORD = "your_secure_password"
 EOF
 
+# Run application
 streamlit run app.py
 ```
 
-## 🌐 Déploiement sur Streamlit Cloud
+## Cloud Deployment
 
-1. Publier le code sur GitHub
-2. Se rendre sur [https://share.streamlit.io](https://share.streamlit.io)
-3. Connecter le dépôt
-4. Renseigner les secrets nécessaires :
+### Streamlit Community Cloud
 
-```toml
-MONGO_URI = "mongodb+srv://user:password@cluster.mongodb.net/"
-APP_PASSWORD = "mot_de_passe"
+1. Push code to GitHub repository
+2. Navigate to [share.streamlit.io](https://share.streamlit.io)
+3. Connect repository and select branch
+4. Configure secrets in **Settings → Secrets**:
+   ```toml
+   MONGO_URI = "mongodb+srv://user:password@cluster.mongodb.net/"
+   APP_PASSWORD = "your_secure_password"
+   ```
+5. Deploy application
+
+## Data Schema
+
+Each experience document contains:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `title` | string | Yes | Brief description of the issue |
+| `problem` | string | Yes | Detailed problem context |
+| `solution` | string | Yes | Working solution |
+| `tags` | array[string] | Yes | Searchable tags |
+| `category` | enum | Yes | `problème`, `astuce`, or `note` |
+| `code_snippet` | string | No | Code examples or configurations |
+| `notes` | string | No | Additional context |
+| `screenshots` | array[object] | No | Base64-encoded images |
+| `date` | string | Yes | ISO date format (YYYY-MM-DD) |
+
+### Example Document
+
+```json
+{
+  "title": "Docker container to host PostgreSQL connection",
+  "problem": "Airbyte running in Docker cannot connect to PostgreSQL on host using localhost",
+  "solution": "Use host.docker.internal:5432 instead of localhost:5432",
+  "tags": ["docker", "postgres", "airbyte", "networking"],
+  "category": "problème",
+  "code_snippet": "jdbc:postgresql://host.docker.internal:5432/database",
+  "notes": "Works on Mac/Windows. Linux requires 172.17.0.1 or --network host",
+  "screenshots": [],
+  "date": "2025-11-21"
+}
 ```
 
-## 📝 Structure d’une expérience
+## Data Migration
 
-Une expérience comporte les éléments suivants :
+When upgrading from previous versions:
 
-* **Titre** : résumé du sujet
-* **Problème** : description détaillée et contexte
-* **Solution** : approche validée
-* **Code snippet** : configuration, commandes, scripts
-* **Tags** : classification par technologie ou contexte
-* **Criticité** : niveau d’impact
-* **Temps perdu** : estimation du temps passé
-* **Date** : résolution de l’incident
-
-## 🎯 Exemples
-
-**Connexion Docker → Postgres**
-
-```
-Problème : Airbyte en Docker ne détecte pas Postgres sur localhost.
-Solution : Utilisation de host.docker.internal:5432.
-Tags : docker, postgres, airbyte, networking
-Temps perdu : 2h
+```bash
+# Run migration script once
+python migration.py
 ```
 
-**Raccourcis SQL sous VSCode**
+This script:
+- Renames `context` → `tags`
+- Converts `criticality` → `category`
+- Removes deprecated `time_wasted` field
+- Initializes `screenshots` array
 
+## Development
+
+### Requirements
+
+```txt
+streamlit>=1.51.0,<2.0.0
+pymongo>=4.15.4,<5.0.0
+pydantic>=2.0.0,<3.0.0
 ```
-Problème : La touche F5 n’exécute pas les requêtes SQL.
-Solution : Ajout de la commande mssql.runQuery dans keybindings.json.
-Tags : vscode, sql, shortcuts
-Temps perdu : 30 minutes
+
+### MongoDB Schema Validation
+
+The application enforces schema validation at the database level using MongoDB's `$jsonSchema` validator. This ensures data consistency even when accessing the database directly.
+
+### Pydantic Models
+
+Application-level validation provides immediate feedback on data entry errors before database insertion.
+
+## Security Considerations
+
+- Credentials stored in Streamlit secrets (never committed to version control)
+- MongoDB Atlas network access configured for Streamlit Cloud IP ranges
+- Dedicated database user with minimal required permissions
+- Password-protected application access
+
+## Use Cases
+
+**Network Configuration**
+```
+Problem: Docker container cannot reach host services
+Solution: Use host.docker.internal instead of localhost
+Tags: docker, networking
 ```
 
-## 🤝 Contribution
+**IDE Configuration**
+```
+Problem: F5 shortcut not working in VSCode SQL extension
+Solution: Modify keybindings.json with mssql.runQuery command
+Tags: vscode, sql, shortcuts
+```
 
-Le projet est open source. Les suggestions et améliorations sont les bienvenues.
+**Database Architecture**
+```
+Problem: MongoDB replica set access from host machine
+Solution: Deploy proxy container in same Docker network
+Tags: mongodb, docker, replicaset
+```
 
-## 📄 Licence
+## Contributing
 
-Licence MIT.
+This is a personal knowledge management tool. Feel free to fork and adapt for your own use cases.
+
+## License
+
+MIT License - Use freely with attribution.
+
+---
+
+**Built to eliminate time waste on previously solved problems.**
