@@ -9,8 +9,6 @@ from datetime import datetime
 import base64
 from typing import List, Optional
 from pydantic import BaseModel, field_validator, ValidationError
-from urllib.parse import urlencode
-import httpx
 import os
 
 # ========== CONFIGURATION ==========
@@ -20,50 +18,10 @@ st.set_page_config(page_title="Experia", page_icon="🔥", layout="wide")
 try:
     AUTHORIZED_EMAILS = st.secrets["auth"]["authorized_emails"]
     MONGO_URI = st.secrets["mongo"]["uri"]
-    LINKEDIN_CLIENT_ID = st.secrets["auth"]["linkedin"]["client_id"]
-    LINKEDIN_CLIENT_SECRET = st.secrets["auth"]["linkedin"]["client_secret"]
 except Exception as e:
     st.error("❌ Erreur de configuration : Il manque des informations dans secrets.toml")
     st.error(f"Détail : {e}")
     st.stop()
-
-_base_url = st.secrets["auth"]["redirect_uri"].split("/oauth2callback")[0]
-LINKEDIN_REDIRECT_URI = _base_url + "/"
-LINKEDIN_STATE = "experia_li_auth"
-
-def get_linkedin_auth_url():
-    params = {
-        "response_type": "code",
-        "client_id": LINKEDIN_CLIENT_ID,
-        "redirect_uri": LINKEDIN_REDIRECT_URI,
-        "scope": "openid profile email",
-        "state": LINKEDIN_STATE,
-    }
-    return "https://www.linkedin.com/oauth/v2/authorization?" + urlencode(params)
-
-def exchange_linkedin_code(code):
-    try:
-        with httpx.Client(timeout=10.0) as client:
-            token_resp = client.post(
-                "https://www.linkedin.com/oauth/v2/accessToken",
-                data={
-                    "grant_type": "authorization_code",
-                    "code": code,
-                    "redirect_uri": LINKEDIN_REDIRECT_URI,
-                    "client_id": LINKEDIN_CLIENT_ID,
-                    "client_secret": LINKEDIN_CLIENT_SECRET,
-                },
-            )
-            access_token = token_resp.json().get("access_token")
-            if not access_token:
-                return None
-            userinfo_resp = client.get(
-                "https://api.linkedin.com/v2/userinfo",
-                headers={"Authorization": f"Bearer {access_token}"},
-            )
-            return userinfo_resp.json()
-    except Exception:
-        return None
 
 # ========== MODELS PYDANTIC ==========
 class Screenshot(BaseModel):
@@ -195,47 +153,20 @@ def encode_image(uploaded_file):
 
 # ========== GESTION AUTHENTIFICATION ==========
 
-# Callback LinkedIn
-if st.query_params.get("state") == LINKEDIN_STATE and "code" in st.query_params:
-    linkedin_data = exchange_linkedin_code(st.query_params["code"])
-    if linkedin_data:
-        st.session_state["linkedin_user"] = linkedin_data
-    st.query_params.clear()
-    st.rerun()
-
-linkedin_user = st.session_state.get("linkedin_user")
-
 # 1. Non connecté
-if not st.user.is_logged_in and not linkedin_user:
+if not st.user.is_logged_in:
     st.title("🔐 Connexion à Experia")
-    st.write("Veuillez vous connecter avec un compte autorisé.")
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Se connecter avec Google", type="primary", use_container_width=True):
-            st.login("google")
-    with col2:
-        st.link_button("Se connecter avec LinkedIn", get_linkedin_auth_url(), use_container_width=True)
+    st.write("Veuillez vous connecter avec votre compte Google autorisé.")
+    if st.button("Se connecter avec Google", type="primary"):
+        st.login("google")
     st.stop()
 
-# Identité de l'utilisateur courant
-if st.user.is_logged_in:
-    current_email = st.user.email
-    current_name = st.user.name
-else:
-    user_data = linkedin_user or {}
-    current_email = user_data.get("email", "")
-    current_name = user_data.get("name", user_data.get("given_name", ""))
-
 # 2. Email non autorisé
-if current_email not in AUTHORIZED_EMAILS:
+if st.user.email not in AUTHORIZED_EMAILS:
     st.title("⛔ Accès refusé")
-    st.error(f"L'adresse email **{current_email}** n'est pas autorisée à accéder à cette application.")
+    st.error(f"L'adresse email **{st.user.email}** n'est pas autorisée à accéder à cette application.")
     if st.button("Se déconnecter"):
-        if st.user.is_logged_in:
-            st.logout()
-        else:
-            del st.session_state["linkedin_user"]
-            st.rerun()
+        st.logout()
     st.stop()
 
 # 3. Connecté et autorisé -> l'application continue
@@ -254,14 +185,10 @@ except Exception as e:
 col1, col2 = st.columns([5, 1])
 with col1:
     st.title("🔥 Experia - Carnet d'Expériences")
-    st.caption(f"Connecté en tant que : {current_name} ({current_email})")
+    st.caption(f"Connecté en tant que : {st.user.name} ({st.user.email})")
 with col2:
     if st.button("🚪 Déconnexion"):
-        if st.user.is_logged_in:
-            st.logout()
-        else:
-            del st.session_state["linkedin_user"]
-            st.rerun()
+        st.logout()
 
 # Initialisation Session State pour UI
 if 'show_form' not in st.session_state:
