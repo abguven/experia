@@ -18,10 +18,10 @@ Personal knowledge base for storing and retrieving technical experiences encount
 | ---------- | ------------------------------------- |
 | Framework  | Streamlit                             |
 | Database   | MongoDB Atlas (M0 free tier)          |
-| Validation | Pydantic v1 + MongoDB Schema Validator|
+| Validation | Pydantic v2 + MongoDB Schema Validator|
 | Auth       | Streamlit native Google OAuth2        |
 | Media      | Base64 encoding                       |
-| Deployment | Streamlit Community Cloud             |
+| Deployment | Docker on self-hosted VPS (Traefik)   |
 
 ## Local setup
 
@@ -52,13 +52,11 @@ uri = "mongodb+srv://user:password@cluster.mongodb.net/?appName=Cluster0"
 streamlit run app.py
 ```
 
-## Streamlit Cloud deployment
+## VPS deployment
 
-1. Push code to GitHub
-2. Go to [share.streamlit.io](https://share.streamlit.io) and connect the repo
-3. In **App settings → Secrets**, paste your `secrets.toml` content with:
-   - `redirect_uri` set to `https://your-app.streamlit.app/oauth2callback`
-4. Add `https://your-app.streamlit.app/oauth2callback` to authorized redirect URIs in Google Cloud Console
+Deployed via Docker on a self-hosted VPS with Traefik as reverse proxy. GitHub Actions builds and pushes the image to GHCR on every push to `main`.
+
+The `secrets.toml` is stored directly on the VPS and mounted as a read-only volume — never in the image or the repo.
 
 ## Experience structure
 
