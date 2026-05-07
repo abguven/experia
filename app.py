@@ -160,9 +160,14 @@ def encode_image(uploaded_file):
 # 1. Utilisateur non connecté -> Bouton Login
 if not st.user.is_logged_in:
     st.title("🔐 Connexion à Experia")
-    st.write("Veuillez vous connecter avec votre compte Google autorisé.")
-    if st.button("Se connecter avec Google", type="primary"):
-        st.login("google")
+    st.write("Veuillez vous connecter avec un compte autorisé.")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Se connecter avec Google", type="primary", use_container_width=True):
+            st.login("google")
+    with col2:
+        if st.button("Se connecter avec LinkedIn", use_container_width=True):
+            st.login("linkedin")
     st.stop() # On arrête l'exécution ici tant que pas connecté
 
 # 2. Utilisateur connecté mais EMAIL non autorisé -> Message erreur
