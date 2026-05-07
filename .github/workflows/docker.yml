@@ -3,6 +3,10 @@ name: Build & Push Docker image
 on:
   push:
     branches: [main]
+    paths:
+      - "app.py"
+      - "requirements.txt"
+      - "Dockerfile"
 
 jobs:
   build:
