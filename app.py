@@ -8,7 +8,7 @@ from pymongo import MongoClient
 from datetime import datetime
 import base64
 from typing import List, Optional
-from pydantic import BaseModel, validator, ValidationError
+from pydantic import BaseModel, field_validator, ValidationError
 import os
 
 # ========== CONFIGURATION ==========
@@ -44,15 +44,17 @@ class Experience(BaseModel):
     category: str
     date: str
     
-    @validator('category')
+    @field_validator('category')
+    @classmethod
     def validate_category(cls, v):
         if v not in ['problème', 'astuce', 'note']:
             raise ValueError('Doit être "problème", "astuce" ou "note"')
         return v
-    
-    @validator('tags')
+
+    @field_validator('tags')
+    @classmethod
     def validate_tags(cls, v):
-        if not v or len(v) == 0:
+        if not v:
             raise ValueError('Au moins un tag requis')
         return v
 
